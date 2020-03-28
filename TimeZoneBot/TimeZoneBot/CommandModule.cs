@@ -37,7 +37,7 @@ namespace TimeZoneBot
         public async Task ConvertTime(string time, [Remainder]string rem)
         {
             DateTime fromTime = OriginTime(time);
-            if(fromTime.Year != 2012)
+            if (fromTime.Year != 2012)
             {
                 await ReplyAsync("No valid time parsed.");
                 return;
@@ -79,6 +79,7 @@ namespace TimeZoneBot
             }
 
             await ReplyAsync($"User identified: {fromUser.Username}");
+            TimeZoneInfo fromZone = GetUserZone(fromUser.Username);
             await (fromUser as IGuildUser).AddRoleAsync(Context.Guild.Roles.FirstOrDefault(x => x.Name.Equals("role3")));
 
             remSplit[0] = start[toIndex + 1];
@@ -92,13 +93,17 @@ namespace TimeZoneBot
             }
 
             List<TimeZoneInfo> zones = new List<TimeZoneInfo>();
+            DateTime rootTime = TimeZoneInfo.ConvertTimeToUtc(fromTime, fromZone);
             foreach (IUser u in timeTos)
             {
                 zones.Add(GetUserZone(u.Username));
-                await ReplyAsync(zones.Last().StandardName);
+                //await ReplyAsync(zones.Last().StandardName);
             }
 
-
+            foreach (TimeZoneInfo tz in zones)
+            {
+                await ReplyAsync($"{fromTime.TimeOfDay} in {fromZone.StandardName} is {TimeZoneInfo.ConvertTimeFromUtc(rootTime, tz).TimeOfDay} in {tz.StandardName}\n");
+            }
         }
 
         private DateTime OriginTime(string time)
@@ -107,7 +112,7 @@ namespace TimeZoneBot
 
             DecypherTime(time, ref hours, ref minutes);
 
-            if(hours == -1 || minutes == -1)
+            if (hours == -1 || minutes == -1)
             {
                 return new DateTime();
             }
@@ -165,17 +170,17 @@ namespace TimeZoneBot
             {
                 cleanSplit[0] = $"0{cleanSplit[0]}";
             }
-            if(cleanSplit[1].Length != 2)
+            if (cleanSplit[1].Length != 2)
             {
                 cleanSplit[1] = "00";
             }
 
-            if (!int.TryParse(cleanSplit[0],out hours) || !int.TryParse(cleanSplit[1], out minutes))
+            if (!int.TryParse(cleanSplit[0], out hours) || !int.TryParse(cleanSplit[1], out minutes))
             {
                 return;
             }
 
-            if(hours <= 12 && timeSplit.Last().Contains("p"))
+            if ((hours < 12 && timeSplit.Last().Contains("p")) || (hours == 12 && timeSplit.Last().Contains("a")))
             {
                 hours += 12;
                 hours %= 24;
