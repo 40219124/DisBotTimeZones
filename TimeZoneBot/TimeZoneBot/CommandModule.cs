@@ -37,7 +37,7 @@ namespace TimeZoneBot
         public async Task ConvertTime(string time, [Remainder]string rem)
         {
             DateTime fromTime = OriginTime(time);
-            if (fromTime.Year != 2012)
+            if (fromTime == new DateTime())
             {
                 await ReplyAsync("No valid time parsed.");
                 return;
@@ -117,7 +117,7 @@ namespace TimeZoneBot
                 return new DateTime();
             }
 
-            return new DateTime(2012, 12, 21, hours, minutes, 0);
+            return new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, hours, minutes, 0);
         }
 
         private void DecypherTime(string time, ref int hours, ref int minutes)
