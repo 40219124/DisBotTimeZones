@@ -139,7 +139,7 @@ namespace TimeZoneBot
                 await ReplyAsync("No timezones to convert to.");
                 return;
             }
-            
+
             TimeZoneInfo fromZone = GetUserZone(fromUser).FirstOrDefault();
 
             List<IGuildUser> timeTos = new List<IGuildUser>();
@@ -153,18 +153,27 @@ namespace TimeZoneBot
                 }
             }
 
+            EmbedBuilder embed = new EmbedBuilder();
+
+            embed.Title = $"{fromTime.ToShortTimeString()} : {(fromZone.IsDaylightSavingTime(DateTime.Now) ? fromZone.DaylightName : fromZone.DisplayName)}";
+            embed.Description = $"  Time from {fromUser.Username}";
+
+
             List<TimeZoneInfo> zones = new List<TimeZoneInfo>();
             DateTime rootTime = TimeZoneInfo.ConvertTimeToUtc(fromTime, fromZone);
             foreach (IGuildUser u in timeTos)
             {
-                zones.Add(GetUserZone(u).FirstOrDefault());
-                //await ReplyAsync(zones.Last().StandardName);
+                List<TimeZoneInfo> uZones = GetUserZone(u);
+                string embedContent = "";
+                foreach(TimeZoneInfo tz in uZones)
+                {
+                    embedContent += (tz.IsDaylightSavingTime(DateTime.Now) ? tz.DaylightName : tz.DisplayName)+ ":\n";
+                    embedContent += TimeZoneInfo.ConvertTimeFromUtc(rootTime, tz).ToShortTimeString();
+                }
+                embed.AddField($"  Time for {u.Username}", embedContent, false);
             }
 
-            foreach (TimeZoneInfo tz in zones)
-            {
-                await ReplyAsync($"{fromTime.TimeOfDay} in {fromZone.StandardName} is {TimeZoneInfo.ConvertTimeFromUtc(rootTime, tz).TimeOfDay} in {tz.StandardName}\n");
-            }
+            await ReplyAsync(null, false, embed.Build());
         }
 
         private DateTime OriginTime(string time)
@@ -257,7 +266,8 @@ namespace TimeZoneBot
                 IRole role = Context.Guild.GetRole(id);
                 if (role != null)
                 {
-                    if (TimeZoneConversion.shortToName.ContainsKey(role.Name)){
+                    if (TimeZoneConversion.shortToName.ContainsKey(role.Name))
+                    {
                         outZones.Add(TimeZoneInfo.FindSystemTimeZoneById(TimeZoneConversion.shortToName[role.Name]));
                     }
                 }
