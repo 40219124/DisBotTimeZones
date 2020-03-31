@@ -53,7 +53,7 @@ namespace TimeZoneBot
             string zones = "";
             foreach (TimeZoneInfo tz in TimeZoneInfo.GetSystemTimeZones())
             {
-                if (tz.BaseUtcOffset.Hours + (tz.BaseUtcOffset.Minutes/60.0f) == offset)
+                if (tz.BaseUtcOffset.Hours + (tz.BaseUtcOffset.Minutes / 60.0f) == offset)
                 {
                     zones += tz.StandardName + "\n";
                 }
@@ -63,15 +63,30 @@ namespace TimeZoneBot
 
         [Command("Set")]
         [Summary("Set someone's role")]
-        public async Task SetRole(string role, IUser user = null)
+        public async Task SetRole(string timeZone, IUser user = null)
         {
             user = user ?? Context.User;
-            await ReplyAsync("Command: greeting");
+            string role = "";
+            string zone = TimeZoneConversion.shortToName["CUT+0"];
+            foreach (KeyValuePair<string, string> pair in TimeZoneConversion.shortToName)
+            {
+                if (pair.Value.Equals(timeZone))
+                {
+                    role = pair.Key;
+                    break;
+                }
+            }
+            if (role.Equals(""))
+            {
+                await ReplyAsync("Not a valid time zone.  Try using \"~Offset [hours]\" to find your time zone name.");
+                return;
+            }
 
             IRole roleI = Context.Guild.Roles.FirstOrDefault(x => x.Name.Equals(role));
-            if (Context.Guild.CurrentUser.GuildPermissions.ManageRoles)
+
+            if (roleI == null)
             {
-                await ReplyAsync("Permission for roles");
+                roleI = await Context.Guild.CreateRoleAsync(role, null, Color.DarkBlue, false, null);
             }
             await (user as IGuildUser).AddRoleAsync(roleI);
             await ReplyAsync("Role set");
