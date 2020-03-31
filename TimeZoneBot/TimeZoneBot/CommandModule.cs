@@ -10,15 +10,50 @@ namespace TimeZoneBot
 {
     public class PublicModule : ModuleBase<SocketCommandContext>
     {
+        [Command("Dictionary")]
+        public async Task MakeDictionary()
+        {
+            using (StreamWriter file = new StreamWriter(Environment.ExpandEnvironmentVariables(@"%USERPROFILE%/Desktop/DictionaryContent.txt")))
+            {
+                foreach (TimeZoneInfo tz in TimeZoneInfo.GetSystemTimeZones())
+                {
+                    string name = tz.StandardName;
+                    string initials = "";
+                    foreach (char c in name.ToCharArray())
+                    {
+                        if (c >= 'A' && c <= 'Z')
+                        {
+                            initials += c;
+                        }
+                    }
+                    string minutes = (tz.BaseUtcOffset.Minutes / 60.0f).ToString();
+                    if (minutes.Equals("0"))
+                    {
+                        minutes = "";
+                    }
+                    else if (minutes.Contains("-"))
+                    {
+                        minutes = minutes.Substring(2);
+                    }
+                    else
+                    {
+                        minutes = minutes.Substring(1);
+                    }
+                    string tag = initials + (tz.BaseUtcOffset.Hours >= 0 ? "+" : "") + tz.BaseUtcOffset.Hours.ToString() + minutes;
+                    await file.WriteAsync($"{{\"{tag}\", \"{name}\"}},\n");
+                }
+            }
+            await ReplyAsync("Dictionary finished.");
+        }
 
         [Command("Offsets")]
         [Summary("Get selection of time zone names with given offset from UTC.")]
-        public async Task GetOffsets(int offset)
+        public async Task GetOffsets(float offset)
         {
             string zones = "";
             foreach (TimeZoneInfo tz in TimeZoneInfo.GetSystemTimeZones())
             {
-                if (tz.BaseUtcOffset.Hours == offset)
+                if (tz.BaseUtcOffset.Hours + (tz.BaseUtcOffset.Minutes/60.0f) == offset)
                 {
                     zones += tz.StandardName + "\n";
                 }
