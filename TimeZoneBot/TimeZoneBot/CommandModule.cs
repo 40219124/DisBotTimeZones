@@ -155,7 +155,7 @@ namespace TimeZoneBot
 
             EmbedBuilder embed = new EmbedBuilder();
 
-            embed.Title = $"{fromTime.ToShortTimeString()} : {(fromZone.IsDaylightSavingTime(DateTime.Now) ? fromZone.DaylightName : fromZone.DisplayName)}";
+            embed.Title = $"{fromTime.ToShortTimeString()} : {(fromZone.IsDaylightSavingTime(DateTime.Now) ? fromZone.DaylightName : fromZone.StandardName)}";
             embed.Description = $"  Time from {fromUser.Username}";
 
 
@@ -167,8 +167,8 @@ namespace TimeZoneBot
                 string embedContent = "";
                 foreach(TimeZoneInfo tz in uZones)
                 {
-                    embedContent += (tz.IsDaylightSavingTime(DateTime.Now) ? tz.DaylightName : tz.DisplayName)+ ":\n";
-                    embedContent += TimeZoneInfo.ConvertTimeFromUtc(rootTime, tz).ToShortTimeString();
+                    embedContent += (tz.IsDaylightSavingTime(DateTime.Now) ? tz.DaylightName : tz.StandardName)+ ":\n";
+                    embedContent += TimeZoneInfo.ConvertTimeFromUtc(rootTime, tz).ToShortTimeString() + "\n";
                 }
                 embed.AddField($"  Time for {u.Username}", embedContent, false);
             }
