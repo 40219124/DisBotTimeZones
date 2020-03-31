@@ -10,6 +10,22 @@ namespace TimeZoneBot
 {
     public class PublicModule : ModuleBase<SocketCommandContext>
     {
+
+        [Command("Offsets")]
+        [Summary("Get selection of time zone names with given offset from UTC.")]
+        public async Task GetOffsets(int offset)
+        {
+            string zones = "";
+            foreach (TimeZoneInfo tz in TimeZoneInfo.GetSystemTimeZones())
+            {
+                if (tz.BaseUtcOffset.Hours == offset)
+                {
+                    zones += tz.StandardName + "\n";
+                }
+            }
+            await ReplyAsync(zones);
+        }
+
         [Command("Set")]
         [Summary("Set someone's role")]
         public async Task SetRole(string role, IUser user = null)
