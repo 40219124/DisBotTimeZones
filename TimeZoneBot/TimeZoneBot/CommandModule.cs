@@ -108,10 +108,6 @@ namespace TimeZoneBot
                 await ReplyAsync("No valid time parsed.");
                 return;
             }
-            else
-            {
-                await ReplyAsync($"Hour: {fromTime.Hour}, Minute: {fromTime.Minute}");
-            }
 
             string[] remSplit = rem.Split(',');
             if (remSplit.Length == 0)
@@ -120,8 +116,7 @@ namespace TimeZoneBot
                 return;
             }
 
-            IUser fromUser = null;
-            List<IUser> timeTos = new List<IUser>();
+            IGuildUser fromUser = null;
             string[] start = remSplit[0].Split(' ');
             int toIndex = -1;
             for (int i = 0; i < start.Length; ++i)
@@ -137,21 +132,21 @@ namespace TimeZoneBot
                     break;
                 }
             }
-            fromUser = (toIndex < 1 ? Context.User : (FindUser(start[0]) ?? Context.User));
+
+            fromUser = (toIndex < 1 ? (Context.User as IGuildUser) : (FindUser(start[0]) ?? (Context.User as IGuildUser)));
             if (toIndex + 1 == start.Length)
             {
                 await ReplyAsync("No timezones to convert to.");
                 return;
             }
+            
+            TimeZoneInfo fromZone = GetUserZone(fromUser).FirstOrDefault();
 
-            await ReplyAsync($"User identified: {fromUser.Username}");
-            TimeZoneInfo fromZone = GetUserZone(fromUser.Username);
-            await (fromUser as IGuildUser).AddRoleAsync(Context.Guild.Roles.FirstOrDefault(x => x.Name.Equals("role3")));
-
+            List<IGuildUser> timeTos = new List<IGuildUser>();
             remSplit[0] = start[toIndex + 1];
             for (int i = 0; i < remSplit.Length; ++i)
             {
-                IUser u = FindUser(remSplit[i]);
+                IGuildUser u = FindUser(remSplit[i]);
                 if (u != null)
                 {
                     timeTos.Add(u);
@@ -160,9 +155,9 @@ namespace TimeZoneBot
 
             List<TimeZoneInfo> zones = new List<TimeZoneInfo>();
             DateTime rootTime = TimeZoneInfo.ConvertTimeToUtc(fromTime, fromZone);
-            foreach (IUser u in timeTos)
+            foreach (IGuildUser u in timeTos)
             {
-                zones.Add(GetUserZone(u.Username));
+                zones.Add(GetUserZone(u).FirstOrDefault());
                 //await ReplyAsync(zones.Last().StandardName);
             }
 
@@ -253,20 +248,25 @@ namespace TimeZoneBot
             }
         }
 
-        private TimeZoneInfo GetUserZone(string name)
+        private List<TimeZoneInfo> GetUserZone(IGuildUser user)
         {
-            switch (name)
+            List<TimeZoneInfo> outZones = new List<TimeZoneInfo>();
+
+            foreach (ulong id in user.RoleIds)
             {
-                case ("tatltuae"):
-                    return TimeZoneInfo.FindSystemTimeZoneById("GMT Standard Time");
-                case ("Roserer"):
-                    return TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
-                default:
-                    return TimeZoneInfo.FindSystemTimeZoneById("GMT Standard Time");
+                IRole role = Context.Guild.GetRole(id);
+                if (role != null)
+                {
+                    if (TimeZoneConversion.shortToName.ContainsKey(role.Name)){
+                        outZones.Add(TimeZoneInfo.FindSystemTimeZoneById(TimeZoneConversion.shortToName[role.Name]));
+                    }
+                }
             }
+
+            return outZones;
         }
 
-        private IUser FindUser(string name)
+        private IGuildUser FindUser(string name)
         {
             name = name.ToLower().Trim(' ');
             foreach (IGuildUser u in Context.Guild.Users)
