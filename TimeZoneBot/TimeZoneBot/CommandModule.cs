@@ -47,7 +47,9 @@ namespace TimeZoneBot
         }
 
         [Command("Offsets")]
-        [Summary("Get selection of time zone names with given offset from UTC.")]
+        [Summary("Get selection of time zone names with given offset from UTC.\n" +
+            "Eg.1) '~Offsets -5'\n" +
+            "Eg.2) '~Offsets 3.5'\n")]
         public async Task GetOffsets(float offset)
         {
             string zones = "";
@@ -62,7 +64,8 @@ namespace TimeZoneBot
         }
 
         [Command("Set")]
-        [Summary("Set someone's role")]
+        [Summary("Set someone's role.\n" +
+            "Eg) '~Set \"GMT Standard Time\"'\n")]
         public async Task SetRole(string timeZone, IUser user = null)
         {
             user = user ?? Context.User;
@@ -99,7 +102,10 @@ namespace TimeZoneBot
         }
 
         [Command("Swap")]
-        [Summary("Convert from one timezone to another.")]
+        [Summary("Convert from one timezone to another.\n" +
+            "Eg.1) '~Swap 1700 to person1, person 2, person 3'\n" +
+            "Eg.2) '~Swap 5.30pm NotMe to person1'\n" +
+            "Eg.3) '~Swap 7 person1'\n")]
         public async Task ConvertTime(string time, [Remainder]string rem)
         {
             DateTime fromTime = OriginTime(time);
@@ -309,6 +315,10 @@ namespace TimeZoneBot
 
             foreach (CommandInfo command in commands)
             {
+                if(command.Name.Equals("Dictionary") || command.Name.Equals("Echo") || command.Name.Equals("Help"))
+                {
+                    continue;
+                }
                 string embedFieldText = (command.Summary ?? "No description") + "\n";
                 //embedFieldText += command.Parameters.ToString() ?? "No parameters\n";
                 embedBuilder.AddField(command.Name, embedFieldText);
