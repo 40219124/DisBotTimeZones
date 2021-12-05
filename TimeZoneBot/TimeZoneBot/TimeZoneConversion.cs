@@ -8,7 +8,7 @@ namespace TimeZoneBot
 {
     public static class TimeZoneConversion
     {
-        public static Dictionary<string, string> shortToName = new Dictionary<string, string>
+        public static readonly Dictionary<string, string> shortToName = new Dictionary<string, string>
         {
             {"DST-12", "Dateline Standard Time"},
             {"UTC-11", "UTC-11"},
