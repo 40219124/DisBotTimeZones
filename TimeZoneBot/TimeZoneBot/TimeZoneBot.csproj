@@ -142,6 +142,7 @@
     <Compile Include="CommandModule.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="QualityOfLifeBits.cs" />
     <Compile Include="TimeZoneConversion.cs" />
   </ItemGroup>
   <ItemGroup>
