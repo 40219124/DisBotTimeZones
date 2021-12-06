@@ -27,7 +27,9 @@ namespace TimeZoneBot
                 DiscordSocketClient client = ((IServiceProvider)services).GetRequiredService<DiscordSocketClient>();
                 client.Log += Log;
                 ((IServiceProvider)services).GetRequiredService<CommandService>().Log += Log;
-                client.UserVoiceStateUpdated += new QualityOfLifeBits().VoiceStatusUpdate;
+                QualityOfLifeBits qol = new QualityOfLifeBits();
+                client.UserVoiceStateUpdated += qol.VoiceStatusUpdate;
+                client.MessageReceived += qol.MessageReceivedAsync;
                 
                 string token = File.ReadAllText(Environment.ExpandEnvironmentVariables(@"%USERPROFILE%\OneDrive\Documents\TimeZonerToken.txt"));
 
