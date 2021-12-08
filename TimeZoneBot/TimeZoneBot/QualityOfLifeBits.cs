@@ -54,7 +54,7 @@ namespace TimeZoneBot
 
         public async Task MessageReceivedAsync(SocketMessage message)
         {
-            if (!(message.Channel is IGuildChannel channel && channel.Guild != null))
+            if (message.Content[0] != '~' || !(message.Channel is IGuildChannel channel && channel.Guild != null))
             {
                 return;
             }
@@ -65,11 +65,20 @@ namespace TimeZoneBot
                 GuildVoiceRoleActive.Add(guildID, false);
                 GuildVoiceRoleID.Add(guildID, 0);
             }
+
             string content = message.Content.ToLower();
+            if (content.StartsWith("~voicerole"))
+            {
+                await HandleVoiceRoleCommand(channel, content);
+            }
+        }
+
+        private async Task HandleVoiceRoleCommand(IGuildChannel channel, string content)
+        {
             // Toggle state
             if (content == "~voicerole")
             {
-                await ActivateVoiceRole(channel.Guild, !GuildVoiceRoleActive[guildID]);
+                await ActivateVoiceRole(channel.Guild, !GuildVoiceRoleActive[channel.GuildId]);
             }
             else if (content.StartsWith("~voicerole "))
             {
@@ -87,11 +96,10 @@ namespace TimeZoneBot
                 // Set voice role for server
                 else if (remainder.StartsWith("<@&"))
                 {
-                    bool priorState = GuildVoiceRoleActive[guildID];
+                    bool priorState = GuildVoiceRoleActive[channel.GuildId];
                     await ActivateVoiceRole(channel.Guild, false);
                     string roleID = remainder.Substring("<@&".Length).Split('>')[0];
-                    GuildVoiceRoleID[guildID] = ulong.Parse(roleID);
-                    await message.Channel.SendMessageAsync(roleID);
+                    GuildVoiceRoleID[channel.GuildId] = ulong.Parse(roleID);
                     await ActivateVoiceRole(channel.Guild, priorState);
                 }
             }

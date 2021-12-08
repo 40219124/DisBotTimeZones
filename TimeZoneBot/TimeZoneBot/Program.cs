@@ -15,6 +15,8 @@ namespace TimeZoneBot
 {
     class Program
     {
+        public static ulong BotID = 692783176741027900;
+
         static void Main(string[] args)
         {
             new Program().MainAsync().GetAwaiter().GetResult();
@@ -27,11 +29,15 @@ namespace TimeZoneBot
                 DiscordSocketClient client = ((IServiceProvider)services).GetRequiredService<DiscordSocketClient>();
                 client.Log += Log;
                 ((IServiceProvider)services).GetRequiredService<CommandService>().Log += Log;
+
                 QualityOfLifeBits qol = new QualityOfLifeBits();
                 client.UserVoiceStateUpdated += qol.VoiceStatusUpdate;
                 client.MessageReceived += qol.MessageReceivedAsync;
-                
-                string token = File.ReadAllText(Environment.ExpandEnvironmentVariables(@"%USERPROFILE%\OneDrive\Documents\TimeZonerToken.txt"));
+                EventOrganiser eo = new EventOrganiser();
+                client.MessageReceived += eo.MessageReceivedAsync;
+                client.MessageUpdated += eo.MessageEditedAsync;
+
+                string token = File.ReadAllText(Environment.ExpandEnvironmentVariables(File.ReadAllText("KeyLocation.txt")));
 
                 await client.LoginAsync(TokenType.Bot, token);
                 await client.StartAsync();

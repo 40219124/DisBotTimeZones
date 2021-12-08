@@ -140,6 +140,7 @@
   <ItemGroup>
     <Compile Include="CommandHandlingService.cs" />
     <Compile Include="CommandModule.cs" />
+    <Compile Include="EventOrganiser.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QualityOfLifeBits.cs" />
